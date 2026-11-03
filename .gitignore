@@ -1,0 +1,25 @@
+# ADNI / A4 data-use agreements: never commit data, package tarballs, package sources,
+# or rendered outputs (rendered vignettes contain participant-level plots).
+raw
+rlib-src
+Rlib
+output
+refs
+.venv
+.Renviron
+*.tar.gz
+*.zip
+*.csv
+*.rds
+*.rda
+*.RData
+*.parquet
+*.pdf
+*.html
+*_cache/
+*_files/
+# A4LEARN vignettes are extracted from the licensed tarball by a4/setup.sh
+a4/vignettes
+a4/man
+.Rhistory
+.DS_Store
