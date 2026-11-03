@@ -9,6 +9,9 @@ Reproductions of published Alzheimer's disease analyses from the official ATRI R
 | `adni/` | ADNIMERGE2 0.1.4 (data cut 2026-10-05) | ATRI vignettes: Enrollment, Longitudinal ADAS-Cog LMM, PACC | Exact match: 1,118 table cells, all model output, PACC standardization | [`adni/ADNI_SETUP_REPORT.md`](adni/ADNI_SETUP_REPORT.md) §4–7 |
 | `adni/` | same | Donohue et al., *JAMA* 2017: amyloid vs 4-yr cognitive decline in CN | PACC, MMSE and CDR-SB reproduced within ~0.1 under the Supplement's specs; Logical Memory 4-yr not reproduced | §11–12 |
 | `a4/` | A4LEARN 1.1.20250808 | Sperling et al., *NEJM* 2023: A4 solanezumab primary results | Primary endpoint exact (−0.30, 95% CI −0.82 to 0.22); secondary endpoints partial | [`a4/REPRODUCTION_REPORT.md`](a4/REPRODUCTION_REPORT.md) |
+| `a4/papers/` | same | Sperling et al., *J Prev Alzheimers Dis* 2024 (amyloid/tau prediction of decline) + Rissman et al. 2024 (plasma p-tau217 vs amyloid PET) | See report; includes injected-error sensitivity runs | [`REPORT.md`](a4/papers/a4learn2024_amyloid_tau_ptau217/REPORT.md) |
+| `a4/papers/` | same | Grill et al., *JAMA Neurol* 2020: amyloid disclosure, short-term psychological outcomes | Reproduced: Ns, Table 1 (one APOE cell off by 10), headline adjusted estimates | [`REPORT.md`](a4/papers/grill2020_disclosure/REPORT.md) |
+| `a4/papers/` | same | Sperling et al., *JAMA Neurol* 2020: factors associated with elevated amyloid | Population and Table 1 exact; injected-error sensitivity table | `reproduce.R` (console log only, no REPORT.md yet) |
 
 The reports were generated in `~/adni-repro` and `~/a4-repro`, and the paths inside them refer to those working directories.
 
@@ -29,6 +32,10 @@ Rscript scripts/07_donohue2017_spec.R        # Donohue 2017, Supplement eTable 2
 ```
 
 All scripts run in under 40 s each on an M-series Mac.
+
+## A4 papers
+
+Each folder under `a4/papers/` reproduces one published A4/LEARN paper from the installed `A4LEARN` package: `cd a4/papers/<paper> && Rscript reproduce*.R`. Aggregate CSVs go to that folder's `output/`, which is git-ignored.
 
 ## A4
 
