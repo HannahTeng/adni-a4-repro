@@ -1,6 +1,6 @@
 # ADNI Setup Report — ADNIMERGE2
 
-Generated 2026-11-02 on this Mac. All numbers below are aggregates (counts, means, model estimates). No participant-level rows were printed, and no data left the machine.
+Generated 2026-11-02. All numbers below are aggregates (counts, means, model estimates). No participant-level rows were printed, and no data left the machine.
 
 ## 1. Environment
 
@@ -9,10 +9,10 @@ Generated 2026-11-02 on this Mac. All numbers below are aggregates (counts, mean
 | R | 4.6.1 (2026-06-24), Homebrew, `/opt/homebrew/bin/R` |
 | Package | **ADNIMERGE2 0.1.4** (new CDISC-style package; built 2026-10-05 by ATRI Biostatistics) |
 | Data cut | **2026-10-05** (`ADNIMERGE2::DATA_DOWNLOADED_DATE`) |
-| Package library | project-local `~/adni-repro/Rlib` (set via `~/adni-repro/.Renviron`, `R_LIBS_USER`) |
+| Package library | project-local `adni/Rlib` (set via `adni/.Renviron`, `R_LIBS_USER`) |
 | pandoc | `/opt/homebrew/bin/pandoc` |
 
-**Files located.** The browser saved the LONI download as `~/Downloads/download.zip` (145.8 MB). That generic name is why the first name-based search missed it. It contains three files, now extracted to `~/adni-repro/raw/`:
+**Input.** The LONI IDA download (`download.zip`, 145.8 MB) contains three files, extracted to `adni/raw/`:
 
 | File | Size |
 |---|---:|
@@ -23,7 +23,7 @@ Generated 2026-11-02 on this Mac. All numbers below are aggregates (counts, mean
 ## 2. Install
 
 ```r
-install.packages("raw/ADNIMERGE2.tar.gz", repos = NULL, type = "source")   # into ~/adni-repro/Rlib
+install.packages("raw/ADNIMERGE2.tar.gz", repos = NULL, type = "source")   # into adni/Rlib
 ```
 
 - **Missing hard dependency:** `assertr` (CRAN).
@@ -67,7 +67,7 @@ The full 235-row inventory (name, rows, cols, participants, description) is in t
 
 ## 4. Vignettes rendered
 
-Rendered with `scripts/02_render_vignettes.R` into `~/adni-repro/output/`. All three ran without errors.
+Rendered with `scripts/02_render_vignettes.R` into `adni/output/`. All three ran without errors.
 
 | Vignette | Output | Runtime |
 |---|---|---:|
@@ -105,7 +105,7 @@ The reproduced counts come from the re-rendered vignette and were also recompute
 | Age, overall mean (SD) | 72.2 (7.6) | 72.2 (7.6) | ✅ |
 | Female, overall n (%) | 1,539 (50.7%) | 1,539 (50.7%) | ✅ |
 
-**Note on TEAM.** Your phase list (ADNI1/GO/2/3/4) leaves out the **TEAM** phase (67 enrolled; the package assigns RID 12000 to TEAM). ADNI1–4 alone sum to 2,974, not 3,041. There is no data-date discrepancy: the package, the bundled vignettes and the online articles are all the 2026-10-05 cut.
+**Note on TEAM.** The usual phase list (ADNI1/GO/2/3/4) leaves out the **TEAM** phase (67 enrolled; the package assigns RID 12000 to TEAM). ADNI1–4 alone sum to 2,974, not 3,041. There is no data-date discrepancy: the package, the bundled vignettes and the online articles are all the 2026-10-05 cut.
 
 ## 5. Reproduction-target candidates (each vignette = one candidate)
 
@@ -200,9 +200,9 @@ None needed for the reproduced analyses. For the dropped p-tau217 vs amyloid PET
 
 | Issue | Fix |
 |---|---|
-| Package not found by name: browser saved the LONI download as `~/Downloads/download.zip` | Extracted to `~/adni-repro/raw/` |
+| LONI download arrives as a generic `download.zip` | Extracted by `setup.sh` to `adni/raw/` |
 | `install.packages(type = "binary")` unsupported (Homebrew R builds from source) | Installed from source |
-| Writing to the Homebrew site-library was declined | Project-local library `~/adni-repro/Rlib` via `.Renviron` |
+| Avoid writing to the system R library | Project-local library `adni/Rlib` via `.Renviron` |
 | `assertr` missing (hard dependency) | Installed from CRAN |
 | Warnings `namespace 'metacore' is not available` | Harmless for these vignettes. They come from the `METACORES` R6 object; `metacore` is Suggests-only |
 | pandoc `--mathjax` deprecation warning | Cosmetic, no effect |
@@ -212,7 +212,7 @@ None needed for the reproduced analyses. For the dropped p-tau217 vs amyloid PET
 
 ## 10. Data-handling notes
 
-- **Data location:** all data stays in `~/adni-repro/raw` and `~/adni-repro/Rlib`. Nothing was uploaded.
+- **Data location:** all data stays in `adni/raw` and `adni/Rlib`. Nothing was uploaded.
 - **Web access:** the only network calls were CRAN package installs and two reads of the public ATRI documentation pages.
 - **Git:** `.gitignore` excludes `raw/`, `rlib-src/`, `Rlib/`, `*.tar.gz`, `*.zip`, `*.csv`, `*.rda`, `*.rds`, `*.pdf` and similar. No git repo was initialized.
 - **Methods PDF:** present in `raw/` but not used, since the cutoff-dependent feasibility step was dropped.
@@ -289,7 +289,7 @@ None needed for the reproduced analyses. For the dropped p-tau217 vs amyloid PET
 
 1. **Baseline amyloid.** The paper interpolated baseline SUVR with an LMM; this reproduction uses the closest scan. This matters for ADNI1 participants, whose first florbetapir scan came years after baseline.
 2. **SUVR pipeline.** 6 mm reprocessing vs the 2016 pipeline. The cutoff choice (1.10 vs 1.11) barely matters: it moves 1 participant.
-3. **AIC-selected covariates and RE structure.** Unpublished per outcome; they are in the Supplement, which I did not have.
+3. **AIC-selected covariates and RE structure.** Unpublished per outcome; they are in the Supplement, which was not available at the time.
 4. **Data corrections since 2016.** The 2026 cut includes later QC fixes, even when truncated at 2016-06-07.
 5. **Follow-up definition.** The paper's median of 3.1 years suggests follow-up was counted differently, e.g. all visits vs PACC visits.
 

@@ -2,7 +2,7 @@
 
 Target: Sperling et al., "Trial of Solanezumab in Preclinical Alzheimer's Disease", *NEJM* 2023;389:1096–107 (doi:10.1056/NEJMoa2305032).
 Tool: ATRI's official `A4LEARN` R package and its "A4 Primary Results" vignette.
-Date run: 2026-10-28. All data stayed on this machine, and this report contains aggregate numbers only.
+Date run: 2026-10-28. Data were read only from the locally installed package; this report contains aggregate numbers only.
 
 **Bottom line:** the primary endpoint reproduces exactly: −1.43 vs −1.13, difference −0.30 (95% CI −0.82 to 0.22), P = 0.26. So do the randomized and mITT Ns and the baseline table. The CFI and ADL point estimates also match. CDR-SB is close but not exact. Amyloid PET matches only qualitatively, because I used an observed-data summary rather than the paper's model. ARIA-E cannot be reproduced from this package.
 
@@ -13,7 +13,7 @@ Date run: 2026-10-28. All data stayed on this machine, and this report contains 
 | OS | macOS 27.0 (aarch64-apple-darwin27.0.0) |
 | R | 4.6.1 (2026-06-24), Homebrew build at `/opt/homebrew/bin/R` |
 | A4LEARN | 1.1.20250808 (`data_download_date` = 2025-08-08) |
-| Tarball | `~/proposal/a4clinicaldata/A4LEARN_1.1.20250808.tar.gz`, SHA-256 `c5d17261…adf414ef1224` |
+| Tarball | `A4LEARN_1.1.20250808.tar.gz`, SHA-256 `c5d17261…adf414ef1224` |
 | nlme / emmeans / clubSandwich | 3.1-169 / 2.0.4 / 0.7.0 |
 | arsenal / kableExtra / Hmisc | 3.7.4 / 1.4.1 / 5.3.0 |
 | tidyverse / dplyr | 2.0.0 / 1.2.1 |
@@ -21,20 +21,20 @@ Date run: 2026-10-28. All data stayed on this machine, and this report contains 
 
 The full `sessionInfo()` is in `output/sessionInfo.txt`.
 
-Note: the tarball was not in `~/Downloads`, `~/Documents`, `~/Desktop` or `~/a4-bio-agent`. Spotlight found it in `~/proposal/a4clinicaldata/`, next to two other versions: `A4LEARN_1.0.20241030.tar.gz` and `A4LEARN_1.2.20260114.tar.gz`. Only 1.1.20250808 was used here.
+Three package versions were available locally (1.0.20241030, 1.1.20250808, 1.2.20260114); only 1.1.20250808 was used here.
 
 ## 2. What was run
 
-All paths below are relative to `~/a4-repro/`.
+All paths below are relative to `a4/`.
 
 1. **Install** (log: `output/install.log`):
    ```r
    install.packages(c("arsenal","kableExtra","clubSandwich","Hmisc"))   # CRAN; others already present
-   install.packages("~/proposal/a4clinicaldata/A4LEARN_1.1.20250808.tar.gz", repos = NULL, type = "source")
+   install.packages("A4LEARN_1.1.20250808.tar.gz", repos = NULL, type = "source")
    ```
-   I found the dependencies from the tarball's DESCRIPTION file, which imports `rmarkdown` and suggests knitr, tidyverse, arsenal, kableExtra, nlme, emmeans, splines, clubSandwich, Hmisc and dplyr. I cross-checked them against every `library()` call and `pkg::` reference in the vignettes. Neither `mmrm` nor `gtsummary` is used.
+   Dependencies were taken from the tarball's DESCRIPTION file, which imports `rmarkdown` and suggests knitr, tidyverse, arsenal, kableExtra, nlme, emmeans, splines, clubSandwich, Hmisc and dplyr, and cross-checked against every `library()` call and `pkg::` reference in the vignettes. Neither `mmrm` nor `gtsummary` is used.
 2. **Verify load:** `library(A4LEARN)` loaded cleanly. The package has 54 datasets; their names and dimensions are in `output/datasets.txt` (for example ADQS 247,289×81, SUBJINFO 6,945×64).
-3. **Vignettes:** `vignettes/A4-Primary-Results.Rmd` loads a child file through the relative path `../man/rmd/A4-Primary-Results-child.Rmd`. So I extracted both `vignettes/` and `man/rmd/` from the tarball into `~/a4-repro/` to keep that path valid. I then rendered both vignettes with `render.R`:
+3. **Vignettes:** `vignettes/A4-Primary-Results.Rmd` loads a child file through the relative path `../man/rmd/A4-Primary-Results-child.Rmd`. Both `vignettes/` and `man/rmd/` were therefore extracted from the tarball into `a4/` to keep that path valid. Both vignettes were then rendered with `render.R`:
    ```r
    rmarkdown::render("vignettes/A4-Primary-Results.Rmd", output_dir = "output")                  # ~29 s
    rmarkdown::render("vignettes/A4-LEARN-Baseline-Characteristics.Rmd", output_dir = "output")   # <1 s
@@ -58,7 +58,7 @@ All paths below are relative to `~/a4-repro/`.
 
 ## 4. Comparison with the published paper
 
-I checked the published values against the paper's full text (PMC10559996; local copy `~/a4-bio-agent/paper/papers/sperling2023a4.txt`). All of the reference values you recalled are correct.
+Published values were checked against the paper's full text (PMC10559996).
 
 **Match key:** *exact* means equal at the paper's printed precision. *Rounding* means within the last printed digit. *Close* means the same direction and nearly the same size, but not equal. *Not reproducible* means the package doesn't contain the needed data or analysis.
 
@@ -129,12 +129,12 @@ These come from `supplementary.R`, **not** from the vignette. They use the same 
 ## 5. Mismatches, warnings and flags
 
 1. **CDR-SB (0.70 / 0.55 vs 0.71 / 0.60; difference 0.15 vs 0.12).** This is the only modeled estimate that doesn't match. The vignette has no CDR-SB code, so I applied the PACC model specification myself. The likely cause is model specification: the paper's CDR-SB model may differ in visit windowing, baseline visit, covariance structure, or how visits delayed by COVID were handled, and the SAP isn't in the package. A different data cut is also possible. My numbers should be treated as an approximate re-analysis, not an official reproduction.
-2. **Amyloid PET numbers.** I computed observed baseline (visit 2) to week-240 (visit 66) changes in completers only. Centiloids were converted with the package's formula, 183.07 × SUVR − 177.26, from `Composite_Summary`. The paper reports model-based estimates (Fig. S3A) and warns that inference from them is limited. So a gap of about 1–2 CL is expected; the direction and overall size agree.
+2. **Amyloid PET numbers.** Observed baseline (visit 2) to week-240 (visit 66) changes were computed in completers only. Centiloids were converted with the package's formula, 183.07 × SUVR − 177.26, from `Composite_Summary`. The paper reports model-based estimates (Fig. S3A) and warns that inference from them is limited. So a gap of about 1–2 CL is expected; the direction and overall size agree.
 3. **ARIA-E cannot be reproduced.** A4LEARN 1.1 has no adverse-event dataset. `imaging_MRI_reads` contains only microhemorrhage (MCH) and superficial siderosis reads, which relate to ARIA-H. `PXEDEMA` in `phyneuro` is peripheral edema from the physical exam, not ARIA. Your claim, "low and similar between groups", matches the paper: 1 vs 2 cases.
 4. **"No. evaluated" at the final visit: 407 / 427 vs 401 / 423.** The paper counts "participants who had a final visit". I counted participants with a PACC at visit sequence 11 (visit 066). The definitions probably differ, for example a final visit vs a visit-066 PACC, or the handling of visits delayed past week 240. A data-cut difference is also possible. This doesn't affect the model estimates.
 5. **Screening counts off by one (4,486 / 1,323 vs 4,485 / 1,322).** This comes from the Baseline vignette, which reproduces Sperling et al. 2020 (*JAMA Neurol*), not the NEJM paper. The likely cause is how re-screened participants are de-duplicated, or the 2025 data cut.
 6. **Baseline PACC SD (2.7 vs 2.8, solanezumab arm).** The unrounded SD is 2.75, so this is a rounding difference.
-7. **Flag on your reference values.** Every number you recalled is correct. Three wording points:
+7. **Wording in the published abstract.** Three points to keep in mind when quoting the results:
    - The paper calls the instrument the "ADCS Activities of Daily Living **Prevention Questionnaire** (partner)", not "ADCS-ADL-PI".
    - The paper doesn't say the secondaries showed "no significant differences". It says the graphical testing scheme didn't allow significance claims because the primary endpoint failed. Unadjusted, the CFI difference has a nominal P of 0.04 (worse in the solanezumab group), so "not formally tested" is more accurate.
    - The amyloid increase was numerically **larger in the placebo group** (19.3 vs 11.6 CL). That detail is worth keeping alongside "increased in both groups".
@@ -143,13 +143,11 @@ These come from `supplementary.R`, **not** from the vignette. They use the same 
 
 ## 6. Install and run issues
 
-- **Tarball location:** it wasn't in the folders you listed; Spotlight found it in `~/proposal/a4clinicaldata/`. No download was needed.
 - **Missing suggested packages:** arsenal, kableExtra, clubSandwich and Hmisc were installed from CRAN, along with their dependencies (sandwich, zoo, svglite, htmlTable, Formula and others). No system software was installed.
-- **Child-document path:** the vignette's relative child path needs `man/rmd/` to sit next to `vignettes/`. I extracted both from the tarball, so nothing needed fixing.
-- **Supplementary script scoping:** my first version failed with `object 'f' not found`, because emmeans and clubSandwich re-evaluate the `gls` call. I fixed it by building the call with `do.call("gls", ...)`. The vignette itself was unaffected.
+- **Child-document path:** the vignette's relative child path needs `man/rmd/` to sit next to `vignettes/`. Both were extracted from the tarball, so no change to the vignette was needed.
+- **Supplementary script scoping:** the first version of `supplementary.R` failed with `object 'f' not found`, because emmeans and clubSandwich re-evaluate the `gls` call. Building the call with `do.call("gls", ...)` resolved it. The vignette itself was unaffected.
 
 ## 7. Data-use notes
 
 - Data was read only from the locally installed package. Nothing was uploaded, and only aggregates were printed.
 - The rendered `A4-Primary-Results.html` contains a **spaghetti plot of individual participants' PACC trajectories**. That is participant-level data, so keep the HTML local and don't share it under the DUA.
-- `~/a4-repro` is not a git repository. I added a `.gitignore` covering `output/`, `src/`, `*.tar.gz` and caches in case it becomes one.

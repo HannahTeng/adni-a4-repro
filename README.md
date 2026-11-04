@@ -1,19 +1,46 @@
-# ADNI & A4 reproduction testbed
+# adni-a4-repro
 
-Reproductions of published Alzheimer's disease analyses from the official ATRI R data packages. They are candidate targets for evaluating agents that verify scientific analyses.
+Independent reproductions of published Alzheimer's disease trial and cohort analyses from the
+official ATRI R data packages, `ADNIMERGE2` (ADNI) and `A4LEARN` (A4/LEARN). Each reproduction is
+scripted end to end, compared against the published tables and estimates, and, where useful,
+re-run with deliberately injected errors to measure how sensitive the published quantities are to
+common programming mistakes.
 
-**This repo holds code and aggregate-only reports. It holds no data.** Participant-level data, package tarballs, package sources, and rendered vignettes are git-ignored under the ADNI and A4 data-use agreements. The rendered vignettes are excluded because they contain participant-level plots. Each `setup.sh` rebuilds the local working tree from your own LONI / A4 downloads.
+The repository is a testbed for two questions:
 
-| Part | Data package | Target | Result | Report |
+1. Can a published analysis be rebuilt from the released data package and its data dictionary alone?
+2. Which published quantities would catch an error in derivation, population or model
+   specification, and which would not?
+
+## Data governance
+
+**This repository contains code and aggregate-only reports. It contains no data.** Under the ADNI and
+A4 data-use agreements, participant-level data, package tarballs, package sources and rendered
+vignettes (which include participant-level plots) are git-ignored. Each `setup.sh` rebuilds the
+local working tree from the user's own LONI or A4 download. Scripts print aggregates only.
+
+## Contents
+
+| Directory | Data package | Published target | Outcome | Report |
 |---|---|---|---|---|
-| `adni/` | ADNIMERGE2 0.1.4 (data cut 2026-10-05) | ATRI vignettes: Enrollment, Longitudinal ADAS-Cog LMM, PACC | Exact match: 1,118 table cells, all model output, PACC standardization | [`adni/ADNI_SETUP_REPORT.md`](adni/ADNI_SETUP_REPORT.md) §4–7 |
-| `adni/` | same | Donohue et al., *JAMA* 2017: amyloid vs 4-yr cognitive decline in CN | PACC, MMSE and CDR-SB reproduced within ~0.1 under the Supplement's specs; Logical Memory 4-yr not reproduced | §11–12 |
-| `a4/` | A4LEARN 1.1.20250808 | Sperling et al., *NEJM* 2023: A4 solanezumab primary results | Primary endpoint exact (−0.30, 95% CI −0.82 to 0.22); secondary endpoints partial | [`a4/REPRODUCTION_REPORT.md`](a4/REPRODUCTION_REPORT.md) |
-| `a4/papers/` | same | Sperling et al., *J Prev Alzheimers Dis* 2024 (amyloid/tau prediction of decline) + Rissman et al. 2024 (plasma p-tau217 vs amyloid PET) | See report; includes injected-error sensitivity runs | [`REPORT.md`](a4/papers/a4learn2024_amyloid_tau_ptau217/REPORT.md) |
-| `a4/papers/` | same | Grill et al., *JAMA Neurol* 2020: amyloid disclosure, short-term psychological outcomes | Reproduced: Ns, Table 1 (one APOE cell off by 10), headline adjusted estimates | [`REPORT.md`](a4/papers/grill2020_disclosure/REPORT.md) |
-| `a4/papers/` | same | Sperling et al., *JAMA Neurol* 2020: factors associated with elevated amyloid | Population and Table 1 exact; injected-error sensitivity table | `reproduce.R` (console log only, no REPORT.md yet) |
+| `adni/` | ADNIMERGE2 0.1.4 (data cut 2026-10-05) | ATRI vignettes: Enrollment, Longitudinal ADAS-Cog LMM, PACC | Exact match on 1,118 table cells, all model output and the PACC standardization | [`adni/ADNI_SETUP_REPORT.md`](adni/ADNI_SETUP_REPORT.md) §4–7 |
+| `adni/` | ADNIMERGE2 0.1.4 | Donohue et al., *JAMA* 2017: amyloid status and 4-year cognitive decline in cognitively normal participants | PACC, MMSE and CDR-SB reproduced within ~0.1 under the Supplement's specifications; Logical Memory 4-year estimate not reproduced | §11–12 |
+| `a4/` | A4LEARN 1.1.20250808 | Sperling et al., *NEJM* 2023: A4 solanezumab primary results | Primary endpoint exact (difference −0.30, 95% CI −0.82 to 0.22); secondary endpoints partially reproduced | [`a4/REPRODUCTION_REPORT.md`](a4/REPRODUCTION_REPORT.md) |
+| `a4/papers/a4learn2024_amyloid_tau_ptau217/` | A4LEARN | Sperling et al., *J Prev Alzheimers Dis* 2024 (amyloid and tau PET as predictors of decline); Rissman et al. 2024 (plasma p-tau217 vs amyloid PET) | Reproduced; includes injected-error sensitivity runs | [`REPORT.md`](a4/papers/a4learn2024_amyloid_tau_ptau217/REPORT.md) |
+| `a4/papers/grill2020_disclosure/` | A4LEARN | Grill et al., *JAMA Neurol* 2020: short-term psychological outcomes of amyloid disclosure | Ns, Table 1 (one APOE cell differs by 10) and headline adjusted estimates reproduced | [`REPORT.md`](a4/papers/grill2020_disclosure/REPORT.md) |
+| `a4/papers/sperling2020_amyloid_factors/` | A4LEARN | Sperling et al., *JAMA Neurol* 2020: factors associated with elevated amyloid at screening | Screening population and Table 1 exact; injected-error sensitivity table | `reproduce.R` (console output) |
 
-The reports were generated in `~/adni-repro` and `~/a4-repro`, and the paths inside them refer to those working directories.
+The companion repository [`clinical-program-review`](https://github.com/HannahTeng/clinical-program-review)
+uses the Sperling 2020 screening population as the worked example for an audited, AI-assisted
+program-specification and R-vs-Python reconciliation workflow.
+
+## Requirements
+
+- R ≥ 4.4 with `dplyr`, `tidyr`, `nlme`, `mmrm`, `emmeans`, `gt`, `knitr`, `rmarkdown`
+- Python ≥ 3.9 (standard library only; used for HTML table comparison)
+- pandoc
+- Your own ADNIMERGE2 download from LONI IDA and/or the A4LEARN package from the A4 Study Data
+  Sharing portal. Neither is distributed here.
 
 ## ADNI
 
@@ -26,28 +53,43 @@ for v in ADNI-Enrollment ADNI-Longitudinal ADNIMERGE2-PACC; do
   python3 -I scripts/03_compare.py rlib-src/ADNIMERGE2/inst/doc/$v.html output/$v.html
 done
 Rscript scripts/04_reproduce_and_perturb.R   # independent reproduction + injected-error impact
-Rscript scripts/05_inventory_md.R            # appendix table
+Rscript scripts/05_inventory_md.R            # appendix table for the report
 Rscript scripts/06_donohue2017.R             # Donohue 2017, first pass
-Rscript scripts/07_donohue2017_spec.R        # Donohue 2017, Supplement eTable 2-11 specs
+Rscript scripts/07_donohue2017_spec.R        # Donohue 2017, Supplement eTable 2-11 specifications
 ```
 
-All scripts run in under 40 s each on an M-series Mac.
-
-## A4 papers
-
-Each folder under `a4/papers/` reproduces one published A4/LEARN paper from the installed `A4LEARN` package: `cd a4/papers/<paper> && Rscript reproduce*.R`. Aggregate CSVs go to that folder's `output/`, which is git-ignored.
+Each script runs in under 40 seconds on an Apple Silicon Mac.
 
 ## A4
 
 ```sh
-sh a4/setup.sh ~/proposal/a4clinicaldata/A4LEARN_1.1.20250808.tar.gz   # extracts vignettes, installs A4LEARN
+sh a4/setup.sh /path/to/A4LEARN_1.1.20250808.tar.gz   # extracts vignettes, installs A4LEARN into a local library
 cd a4
-Rscript render.R          # renders A4-Primary-Results + A4-LEARN-Baseline-Characteristics into output/
-Rscript supplementary.R   # secondary endpoints with the vignette's spline GLS
+Rscript render.R          # renders A4-Primary-Results and A4-LEARN-Baseline-Characteristics into output/
+Rscript supplementary.R   # secondary endpoints with the vignette's spline GLS model
 ```
 
-## Rules for contributors (DUA)
+Each folder under `a4/papers/` reproduces one paper: `cd a4/papers/<paper> && Rscript reproduce*.R`.
+Aggregate CSVs are written to that folder's `output/`, which is git-ignored.
 
-- **No participant-level output.** Never print participant-level rows (`head()`, `print(df)`, `View()`); output aggregates only.
-- **Data stays local.** Never upload data, excerpts or rendered outputs to any website, API, GitHub, Colab or cloud service.
-- **Keep the ignore list.** Keep `.gitignore` as is, and run `git status` before every commit.
+## Method
+
+Every reproduction follows the same steps, recorded in its report:
+
+1. **Population.** Rebuild the analysis population from the package's analysis datasets (ADSL, ADQS,
+   ADPET and related CDISC-style tables) using the flags and visit codes documented in the data
+   dictionary, and match the published N at each stage.
+2. **Derivations.** Re-derive composite scores (PACC, ADAS-Cog, CDR-SB) from component items where
+   the package provides them, and compare against the package's own derived variables.
+3. **Models.** Fit the published model (MMRM, mixed-effects, GLS with natural splines) with the
+   stated covariates and covariance structure; report estimates, confidence intervals and P values
+   next to the published values with the absolute difference.
+4. **Sensitivity.** Where the report includes an injected-error table, re-run the analysis with one
+   deliberate defect at a time (wrong population flag, dropped covariate, off-by-one visit window,
+   mis-coded treatment arm) and record which published quantities move and by how much.
+
+## Contributing under the DUA
+
+- Output aggregates only. Never print participant-level rows (`head()`, `print(df)`, `View()`).
+- Data stays local. Do not upload data, excerpts or rendered outputs to any service.
+- Keep `.gitignore` as is and run `git status` before every commit.
